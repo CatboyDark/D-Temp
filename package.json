@@ -1,0 +1,16 @@
+{
+	"name": "temp",
+	"description": "Discord Bot Template",
+	"author": "CatboyDark",
+	"version": "1.0.0",
+	"license": "MIT",
+	"homepage": "",
+	"type": "module",
+	"main": "start.js",
+	"dependencies": {
+		"discord.js": "^14.17.3"
+	},
+	"devDependencies": {
+		"eslint": "^9.17.0"
+	}
+}
