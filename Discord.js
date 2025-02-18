@@ -1,8 +1,8 @@
 import { ActivityType, Client, Collection, GatewayIntentBits, REST, Routes } from 'discord.js';
 import fs from 'fs';
-import auth from '../../auth.json' with { type: 'json' };
-import config from '../../config.json' with { type: 'json' };
-import { createMsg, createSlash } from '../helper.js';
+import auth from './auth.json' with { type: 'json' };
+import config from './config.json' with { type: 'json' };
+import { createMsg, createSlash } from './src/helper.js';
 
 const client = new Client({
 	intents: [
@@ -51,10 +51,10 @@ async function initEmojis(client) {
 async function discord() { // Credits: Kathund
 
 	// Commands
-	const slashDir = fs.readdirSync('./src/discord/commands/slash').filter((file) => file.endsWith('.js'));
+	const slashDir = fs.readdirSync('./src/commands/slash').filter((file) => file.endsWith('.js'));
 	const slashCommands = [];
 	for (const slashFile of slashDir) {
-		const slashCommand = (await import(`./commands/slash/${slashFile}`)).default;
+		const slashCommand = (await import(`./src/commands/slash/${slashFile}`)).default;
 		const slashCmd = createSlash(slashCommand);
 		client.sc.set(slashCmd.data.name, slashCmd);
 		slashCommands.push(slashCmd.data.toJSON());
@@ -63,16 +63,16 @@ async function discord() { // Credits: Kathund
 	const rest = new REST({ version: '10' }).setToken(auth.token);
 	await rest.put(Routes.applicationCommands(Buffer.from(auth.token.split('.')[0], 'base64').toString('ascii')), { body: slashCommands });
 
-	const plainDir = fs.readdirSync('./src/discord/commands/plain').filter(file => file.endsWith('.js'));
+	const plainDir = fs.readdirSync('./src/commands/plain').filter(file => file.endsWith('.js'));
 	for (const plainFile of plainDir) {
-		const plainCmd = (await import(`./commands/plain/${plainFile}`)).default;
+		const plainCmd = (await import(`./src/commands/plain/${plainFile}`)).default;
 		client.pc.set(plainCmd.name, plainCmd);
 	};
 
 	// Events
-	const eventDir = fs.readdirSync('./src/discord/events').filter(file => file.endsWith('.js'));
+	const eventDir = fs.readdirSync('./src/events').filter(file => file.endsWith('.js'));
 	for (const eventFile of eventDir) {
-		const event = (await import(`./events/${eventFile}`)).default;
+		const event = (await import(`./src/events/${eventFile}`)).default;
 		client.on(event.name, (...args) => event.execute(...args));
 	};
 
@@ -82,25 +82,13 @@ async function discord() { // Credits: Kathund
 	client.on('ready', async () => {
 		await initEmojis(client);
 
-		if (config.logsChannel) {
-			const channel = client.channels.cache.get(config.logsChannel);
-			channel.send({ embeds: [createMsg({ desc: '**Bot is Online!**' })] });
-		}
-		if (config.guild) {
-			client.user.setActivity(config.guild, {
-				type: ActivityType.Watching
-			});
-		}
-		else {
-			if (config.logsChannel) {
-				const channel = client.channels.cache.get(config.logsChannel);
-				client.user.setActivity(channel.guild.name, {
-					type: ActivityType.Watching
-				});
-			}
-		}
+		client.channels.cache.get(config.logsChannel)?.send({ embeds: [createMsg({ desc: '**Bot is Online!**' })] });
+		client.user.setActivity(config.guild ?? client.channels.cache.get(config.logsChannel)?.guild.name, { type: ActivityType.Watching });
+
 		console.log('Bot is online!');
 	});
 }
 
-export { client, discord };
+discord();
+
+export default client;

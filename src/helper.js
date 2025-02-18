@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, PermissionFlagsBits, SlashCommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import fs from 'fs';
-import { client } from './discord/Discord.js';
+import client from '../Discord.js';
 
 function readConfig() {
 	return JSON.parse(fs.readFileSync('./config.json', 'utf8'));
